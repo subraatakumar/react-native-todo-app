@@ -25,6 +25,7 @@ import {format, addDays} from 'date-fns';
 import {TodoObject, AppData} from './types';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {RuntimeGlobals} from 'webpack';
+import {Avatar, Button, Card, Title, Paragraph} from 'react-native-paper';
 
 const App = () => {
   const [navBarDate, setNavBarDate] = React.useState(Date.now());
@@ -145,18 +146,20 @@ const App = () => {
       </View>
       <ScrollView>
         {todos.length === 0 ? (
-          <View>
+          <View style={[styles.singleTodoContainer, styles.shadowProp]}>
             <Text>No Data</Text>
           </View>
         ) : todos.filter(sTodo => sTodo.date === navBarDate).length === 0 ? (
-          <View>
+          <View style={[styles.singleTodoContainer, styles.shadowProp]}>
             <Text>No Data</Text>
           </View>
         ) : (
           todos
             .filter(sTodo => sTodo.date == navBarDate)
             .map(singleTodo => (
-              <View key={singleTodo.id} style={styles.singleTodoContainer}>
+              <View
+                key={singleTodo.id}
+                style={[styles.singleTodoContainer, styles.shadowProp]}>
                 <Text style={styles.todoText}>{singleTodo.text}</Text>
                 <View style={styles.singleTodoIconsContainer}>
                   <Pressable onPress={() => handleDeletePress(singleTodo.id)}>
@@ -215,13 +218,9 @@ const styles = StyleSheet.create({
     margin: 10,
     padding: 15,
     backgroundColor: '#FBFBFB',
-    shadowColor: '#000000',
-    shadowOpacity: 0.25,
-    shadowOffset: {width: 0, height: 4},
-    shadowRadius: 4,
     borderWidth: 1,
     borderRadius: 5,
-    borderColor: '#000000',
+    borderColor: '#FBFBFB',
   },
   singleTodoIconsContainer: {
     flexDirection: 'row',
@@ -232,6 +231,12 @@ const styles = StyleSheet.create({
     fontSize: 24,
     color: '#000000',
     paddingBottom: 20,
+  },
+  shadowProp: {
+    shadowColor: '#000000',
+    shadowOffset: {width: 4, height: 4},
+    shadowRadius: 1,
+    elevation: 10,
   },
 });
 
