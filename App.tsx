@@ -25,41 +25,44 @@ import {format, addDays} from 'date-fns';
 import {TodoObject, AppData} from './types';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {RuntimeGlobals} from 'webpack';
-import {Avatar, Button, Card, Title, Paragraph} from 'react-native-paper';
 
-const App = () => {
-  const [navBarDate, setNavBarDate] = React.useState(Date.now());
+const App: React.FC = () => {
+  const storageKey: string = 'my-app-data';
+  const [navBarDate, setNavBarDate] = React.useState<number>(Date.now());
   const [todos, setTodos] = React.useState<TodoObject[]>([]);
   const [textInputValue, setTextInputValue] = React.useState<string>('');
   const todoTextInput = React.useRef<TextInput>(null);
 
-  const handleRightPress = () => {
-    setNavBarDate(addDays(new Date(navBarDate), 1).getTime());
-  };
+  React.useEffect(() => {
+    console.log('First Run!');
 
-  const handleLeftPress = () => {
-    setNavBarDate(addDays(new Date(navBarDate), -1).getTime());
-  };
+    const getAppData = async (): Promise<AppData | null> => {
+      try {
+        const data = await AsyncStorage.getItem(storageKey);
 
-  const handleDeletePress = (id: Number) => {
-    setTodos(todos.filter(item => item.id !== id));
-  };
-
-  const storageKey = 'my-app-data';
-
-  const getAppData = async (): Promise<AppData | null> => {
-    try {
-      const data = await AsyncStorage.getItem(storageKey);
-
-      if (data) {
-        console.log(JSON.parse(data));
-        return JSON.parse(data);
+        if (data) {
+          console.log(JSON.parse(data));
+          return JSON.parse(data);
+        }
+        return null;
+      } catch {
+        return null;
       }
-      return null;
-    } catch {
-      return null;
-    }
-  };
+    };
+
+    const getDataFromStorage = async () => {
+      try {
+        const data = await getAppData();
+        if (data !== null) {
+          console.log('data in storage', data.todosData);
+          setTodos(data.todosData);
+        } else {
+          console.log('no Data on Storage!');
+        }
+      } catch {}
+    };
+    getDataFromStorage();
+  }, []);
 
   const setAppData = async (newData: AppData) => {
     console.log('starting to store local storage!');
@@ -72,22 +75,18 @@ const App = () => {
     }
   };
 
-  React.useEffect(() => {
-    console.log('First Run!');
-    const getDataFromStorage = async () => {
-      try {
-        const data = await getAppData();
-        if (data !== null) {
-          console.log('data in storage', data.todosData);
-          setTodos(data.todosData);
-        } else {
-          console.log('no Data on Storage!');
-        }
-      } catch {}
-      return null;
-    };
-    getDataFromStorage();
-  }, []);
+  const handleRightPress = () => {
+    setNavBarDate(addDays(new Date(navBarDate), 1).getTime());
+  };
+
+  const handleLeftPress = () => {
+    setNavBarDate(addDays(new Date(navBarDate), -1).getTime());
+  };
+
+  const handleDeletePress = (id: number) => {
+    setTodos(todos.filter(item => item.id !== id));
+    setAppData({todosData: todos});
+  };
 
   React.useEffect(() => {
     console.log('todos data updated', todos);
@@ -117,8 +116,26 @@ const App = () => {
     });
   };
 
+  const compareDates = React.useCallback(
+    (sTodo: TodoObject, navBarDate: number) => {
+      let date1 = new Date(sTodo.date);
+      date1.setHours(0, 0, 0, 0);
+      let date2 = new Date(navBarDate);
+      date2.setHours(0, 0, 0, 0);
+      console.log(
+        'Date Filter',
+        date1,
+        date2,
+        date1.toString() == date2.toString(),
+      );
+
+      return date1.toString() == date2.toString();
+    },
+    [todos],
+  );
+
   return (
-    <SafeAreaView>
+    <SafeAreaView style={styles.bodyStyle}>
       <View style={styles.navBar}>
         <Pressable onPress={handleLeftPress}>
           <ArrowLeft2 size={32} color="#000000" />
@@ -135,7 +152,7 @@ const App = () => {
           style={styles.textinput}
           value={textInputValue}
           placeholder="Input Todo..."
-          onChangeText={setTextInputValue}
+          onChangeText={text => setTextInputValue(text)}
           onSubmitEditing={handleSubmitPress}
           blurOnSubmit={false} // Without this focus method will not work
           ref={todoTextInput}
@@ -145,17 +162,14 @@ const App = () => {
         </Pressable>
       </View>
       <ScrollView>
-        {todos.length === 0 ? (
-          <View style={[styles.singleTodoContainer, styles.shadowProp]}>
-            <Text>No Data</Text>
-          </View>
-        ) : todos.filter(sTodo => sTodo.date === navBarDate).length === 0 ? (
+        {todos.length === 0 ||
+        todos.filter(sTodo => compareDates(sTodo, navBarDate)).length === 0 ? (
           <View style={[styles.singleTodoContainer, styles.shadowProp]}>
             <Text>No Data</Text>
           </View>
         ) : (
           todos
-            .filter(sTodo => sTodo.date == navBarDate)
+            .filter(sTodo => compareDates(sTodo, navBarDate))
             .map(singleTodo => (
               <View
                 key={singleTodo.id}
@@ -178,6 +192,9 @@ const App = () => {
 };
 
 const styles = StyleSheet.create({
+  bodyStyle: {
+    justifyContent: 'flex-end',
+  },
   navBar: {
     flexDirection: 'row',
     justifyContent: 'space-between',
