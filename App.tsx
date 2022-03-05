@@ -22,28 +22,24 @@ import {
 } from 'react-native';
 import {ArrowLeft2, ArrowRight2, Verify, Trash} from 'iconsax-react-native';
 import {format, addDays} from 'date-fns';
-import {TodoObject} from './types';
+import {TodoObject, AppData} from './types';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const App = () => {
-  type AppData = {
-    todos: TodoObject[];
-  };
-
-  const [navBarDate, setNavBarDate] = React.useState(new Date());
+  const [navBarDate, setNavBarDate] = React.useState(Date.now());
   const [todos, setTodos] = React.useState<TodoObject[]>([]);
-  console.log(todos);
   const [textInputValue, setTextInputValue] = React.useState<string>('');
+  const todoTextInput = React.useRef<TextInput>(null);
 
   const handleRightPress = () => {
-    setNavBarDate(addDays(navBarDate, 1));
+    setNavBarDate(addDays(new Date(navBarDate), 1).getTime());
   };
 
   const handleLeftPress = () => {
-    setNavBarDate(addDays(navBarDate, -1));
+    setNavBarDate(addDays(new Date(navBarDate), -1).getTime());
   };
 
-  const handleDeletePress = (id: number) => {
+  const handleDeletePress = (id: Number) => {
     setTodos(todos.filter(item => item.id !== id));
   };
 
@@ -54,6 +50,7 @@ const App = () => {
       const data = await AsyncStorage.getItem(storageKey);
 
       if (data) {
+        console.log(JSON.parse(data));
         return JSON.parse(data);
       }
       return null;
@@ -63,28 +60,59 @@ const App = () => {
   };
 
   const setAppData = async (newData: AppData) => {
+    console.log('starting to store local storage!');
     try {
       await AsyncStorage.setItem(storageKey, JSON.stringify(newData));
-    } catch {}
+    } catch {
+      console.log('Unable to store to local storage!');
+    } finally {
+      console.log('Saved to local storage!');
+    }
   };
 
   React.useEffect(() => {
+    console.log('First Run!');
     const getDataFromStorage = async () => {
-      const data = await getAppData();
-
-      if (data) {
-        setTodos(data.todos);
-      }
+      try {
+        const data = await getAppData();
+        if (data !== null) {
+          console.log('data in storage', data.todosData);
+          setTodos(data.todosData);
+        } else {
+          console.log('no Data on Storage!');
+        }
+      } catch {}
+      return null;
     };
     getDataFromStorage();
   }, []);
 
+  React.useEffect(() => {
+    console.log('todos data updated', todos);
+  }, [todos]);
+
+  const setInputFocus = () => {
+    if (null !== todoTextInput.current) todoTextInput.current.focus();
+  };
+
   const handleSubmitPress = () => {
     if (textInputValue === '') return;
+    let maxId: number;
 
-    setTodos([...todos, {id: Date.now(), text: textInputValue}]);
-    setAppData({todos: todos});
-    setTextInputValue('');
+    maxId =
+      todos.length == 0 ? 0 : todos.reduce((a, b) => (a.id > b.id ? a : b)).id;
+
+    setTodos(current => {
+      const newValue = [
+        ...current,
+        {id: maxId + 1, date: navBarDate, text: textInputValue},
+      ];
+      setAppData({todosData: newValue});
+      setTextInputValue('');
+      setInputFocus();
+      console.log('setTodos', newValue);
+      return newValue;
+    });
   };
 
   return (
@@ -100,20 +128,35 @@ const App = () => {
         style={styles.textinput}
         value={textInputValue}
         onChangeText={setTextInputValue}
+        onSubmitEditing={handleSubmitPress}
+        blurOnSubmit={false} // Without this focus method will not work
+        ref={todoTextInput}
       />
       <Pressable onPress={handleSubmitPress}>
         <ArrowRight2 color="#000000" />
       </Pressable>
-      <View>
-        {todos.map(singleTodo => (
-          <View key={singleTodo.id}>
-            <Text>{singleTodo.text}</Text>
-            <Pressable onPress={() => handleDeletePress(singleTodo.id)}>
-              <Trash color="#000000" />
-            </Pressable>
+      <ScrollView>
+        {todos.length === 0 ? (
+          <View>
+            <Text>No Data</Text>
           </View>
-        ))}
-      </View>
+        ) : todos.filter(sTodo => sTodo.date === navBarDate).length === 0 ? (
+          <View>
+            <Text>No Data</Text>
+          </View>
+        ) : (
+          todos
+            .filter(sTodo => sTodo.date == navBarDate)
+            .map(singleTodo => (
+              <View key={singleTodo.id}>
+                <Text>{singleTodo.text}</Text>
+                <Pressable onPress={() => handleDeletePress(singleTodo.id)}>
+                  <Trash color="#000000" />
+                </Pressable>
+              </View>
+            ))
+        )}
+      </ScrollView>
     </SafeAreaView>
   );
 };
