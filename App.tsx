@@ -24,6 +24,7 @@ import {ArrowLeft2, ArrowRight2, Verify, Trash} from 'iconsax-react-native';
 import {format, addDays} from 'date-fns';
 import {TodoObject, AppData} from './types';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {RuntimeGlobals} from 'webpack';
 
 const App = () => {
   const [navBarDate, setNavBarDate] = React.useState(Date.now());
@@ -117,24 +118,31 @@ const App = () => {
 
   return (
     <SafeAreaView>
-      <Pressable onPress={handleLeftPress}>
-        <ArrowLeft2 color="#000000" />
-      </Pressable>
-      <Text>{format(navBarDate, 'dd/MM/yyyy')}</Text>
-      <Pressable onPress={handleRightPress}>
-        <ArrowRight2 color="#000000" />
-      </Pressable>
-      <TextInput
-        style={styles.textinput}
-        value={textInputValue}
-        onChangeText={setTextInputValue}
-        onSubmitEditing={handleSubmitPress}
-        blurOnSubmit={false} // Without this focus method will not work
-        ref={todoTextInput}
-      />
-      <Pressable onPress={handleSubmitPress}>
-        <ArrowRight2 color="#000000" />
-      </Pressable>
+      <View style={styles.navBar}>
+        <Pressable onPress={handleLeftPress}>
+          <ArrowLeft2 size={32} color="#000000" />
+        </Pressable>
+        <Text style={styles.navBarDate}>
+          {format(navBarDate, 'dd/MM/yyyy')}
+        </Text>
+        <Pressable onPress={handleRightPress}>
+          <ArrowRight2 size={32} color="#000000" />
+        </Pressable>
+      </View>
+      <View style={styles.textInputContainer}>
+        <TextInput
+          style={styles.textinput}
+          value={textInputValue}
+          placeholder="Input Todo..."
+          onChangeText={setTextInputValue}
+          onSubmitEditing={handleSubmitPress}
+          blurOnSubmit={false} // Without this focus method will not work
+          ref={todoTextInput}
+        />
+        <Pressable onPress={handleSubmitPress} style={styles.submitPressable}>
+          <ArrowRight2 size={32} color="#000000" style={styles.submitArrow} />
+        </Pressable>
+      </View>
       <ScrollView>
         {todos.length === 0 ? (
           <View>
@@ -148,11 +156,16 @@ const App = () => {
           todos
             .filter(sTodo => sTodo.date == navBarDate)
             .map(singleTodo => (
-              <View key={singleTodo.id}>
-                <Text>{singleTodo.text}</Text>
-                <Pressable onPress={() => handleDeletePress(singleTodo.id)}>
-                  <Trash color="#000000" />
-                </Pressable>
+              <View key={singleTodo.id} style={styles.singleTodoContainer}>
+                <Text style={styles.todoText}>{singleTodo.text}</Text>
+                <View style={styles.singleTodoIconsContainer}>
+                  <Pressable onPress={() => handleDeletePress(singleTodo.id)}>
+                    <Trash size="45" color="#FF0000" />
+                  </Pressable>
+                  <Pressable onPress={() => handleDeletePress(singleTodo.id)}>
+                    <Verify size="45" color="#21A300" />
+                  </Pressable>
+                </View>
               </View>
             ))
         )}
@@ -162,8 +175,63 @@ const App = () => {
 };
 
 const styles = StyleSheet.create({
+  navBar: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    padding: 14,
+  },
+  navBarDate: {
+    fontFamily: 'Roboto',
+    fontWeight: 'bold',
+    fontSize: 24,
+    color: '#000000',
+  },
+  textInputContainer: {
+    flexDirection: 'row',
+    padding: 14,
+  },
   textinput: {
     borderWidth: 1,
+    flex: 1,
+    borderRadius: 5,
+    fontFamily: 'Roboto',
+    fontSize: 24,
+    paddingLeft: 15,
+    paddingRight: 15,
+  },
+  submitPressable: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#BBECA4',
+    borderRadius: 5,
+    padding: 10,
+    width: 53,
+    marginLeft: 15,
+  },
+  submitArrow: {
+    padding: 10,
+  },
+  singleTodoContainer: {
+    margin: 10,
+    padding: 15,
+    backgroundColor: '#FBFBFB',
+    shadowColor: '#000000',
+    shadowOpacity: 0.25,
+    shadowOffset: {width: 0, height: 4},
+    shadowRadius: 4,
+    borderWidth: 1,
+    borderRadius: 5,
+    borderColor: '#000000',
+  },
+  singleTodoIconsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  todoText: {
+    fontFamily: 'Roboto',
+    fontSize: 24,
+    color: '#000000',
+    paddingBottom: 20,
   },
 });
 
