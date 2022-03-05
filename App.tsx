@@ -22,20 +22,13 @@ import {
 } from 'react-native';
 import {ArrowLeft2, ArrowRight2, Verify, Trash} from 'iconsax-react-native';
 import {format, addDays} from 'date-fns';
-
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+import {TodoObject} from './types';
 
 const App = () => {
   const [navBarDate, setNavBarDate] = React.useState(new Date());
-  const [todos, setTodos] = React.useState([]);
-  
-  React.useEffect(() => {}, []);
+  const [todos, setTodos] = React.useState<TodoObject[]>([]);
+  console.log(todos);
+  const [textInputValue, setTextInputValue] = React.useState<string>('');
 
   const handleRightPress = () => {
     setNavBarDate(addDays(navBarDate, 1));
@@ -45,7 +38,16 @@ const App = () => {
     setNavBarDate(addDays(navBarDate, -1));
   };
 
-  const handleSubmitPress = () => {};
+  const handleSubmitPress = () => {
+    if (textInputValue === '') return;
+
+    setTodos([...todos, {id: Date.now(), text: textInputValue}]);
+    setTextInputValue('');
+  };
+
+  const handleDeletePress = (id: number) => {
+    setTodos(todos.filter(item => item.id !== id));
+  };
 
   return (
     <SafeAreaView>
@@ -56,11 +58,24 @@ const App = () => {
       <Pressable onPress={handleRightPress}>
         <ArrowRight2 color="#000000" />
       </Pressable>
-      <TextInput style={styles.textinput} />
+      <TextInput
+        style={styles.textinput}
+        value={textInputValue}
+        onChangeText={setTextInputValue}
+      />
       <Pressable onPress={handleSubmitPress}>
         <ArrowRight2 color="#000000" />
       </Pressable>
-      <ScrollView></ScrollView>
+      <View>
+        {todos.map(singleTodo => (
+          <View>
+            <Text key={singleTodo.id}>{singleTodo.text}</Text>
+            <Pressable onPress={() => handleDeletePress(singleTodo.id)}>
+              <Trash color="#000000" />
+            </Pressable>
+          </View>
+        ))}
+      </View>
     </SafeAreaView>
   );
 };
