@@ -1,11 +1,14 @@
 import React from 'react';
 import {ScrollView, StyleSheet, Text, View} from 'react-native';
 import {TodoObject} from '../../types';
-import {useContextProvider} from '../AppContextProvider';
+// import {useContextProvider} from '../AppContextProvider';
 import SingleTodoComponent from './SingleTodoComponent';
+import {observer} from 'mobx-react-lite';
+import {todoStore} from '../App';
 
-const TodoList = () => {
-  const appContext = useContextProvider();
+const TodoList: React.FC = observer(() => {
+  // const appContext = useContextProvider();
+
   const compareDates = React.useCallback(
     (sTodo: TodoObject, navBarDate: number) => {
       let date1 = new Date(sTodo.date);
@@ -24,34 +27,33 @@ const TodoList = () => {
     [],
   );
 
-  const handleDeletePress = (id: number) => {
-    appContext.setTodos(appContext.todos.filter(item => item.id !== id));
-    appContext.setAppData({todosData: appContext.todos});
-  };
+  // const handleDeletePress = (id: number) => {
+  //   appContext.setTodos(appContext.todos.filter(item => item.id !== id));
+  //   appContext.setAppData({todosData: appContext.todos});
+  // };
 
   return (
     <ScrollView>
-      {appContext.todos.length === 0 ||
-      appContext.todos.filter(sTodo =>
-        compareDates(sTodo, appContext.navBarDate),
-      ).length === 0 ? (
+      {todoStore.todos.length === 0 ||
+      todoStore.todos.filter(sTodo => compareDates(sTodo, todoStore.navBarDate))
+        .length === 0 ? (
         <View style={[styles.singleTodoContainer, styles.shadowProp]}>
           <Text>No Data</Text>
         </View>
       ) : (
-        appContext.todos
-          .filter(sTodo => compareDates(sTodo, appContext.navBarDate))
+        todoStore.todos
+          .filter(sTodo => compareDates(sTodo, todoStore.navBarDate))
           .map(singleTodo => (
             <SingleTodoComponent
               key={singleTodo.id}
               singleTodo={singleTodo}
-              handleDeletePress={handleDeletePress}
+              handleDeletePress={todoStore.handleDeletePress}
             />
           ))
       )}
     </ScrollView>
   );
-};
+});
 
 const styles = StyleSheet.create({
   bodyStyle: {

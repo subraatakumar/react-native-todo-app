@@ -1,11 +1,14 @@
 import React from 'react';
 import {StyleSheet, View, Pressable, TextInput} from 'react-native';
-import {useContextProvider} from '../AppContextProvider';
+// import {useContextProvider} from '../AppContextProvider';
 import {ArrowRight2} from 'iconsax-react-native';
+import {todoStore} from '../App';
+import {addDays} from 'date-fns';
 
 const TodoInput: React.FC = () => {
   const todoTextInput = React.useRef<TextInput>(null);
-  const appContext = useContextProvider();
+
+  // const appContext = useContextProvider();
   const [textInputValue, setTextInputValue] = React.useState<string>('');
   const handleChangeText = (t: string) => {
     setTextInputValue(t);
@@ -14,7 +17,7 @@ const TodoInput: React.FC = () => {
     if (null !== todoTextInput.current) todoTextInput.current.focus();
   };
   const handleSubmitEditing = (textInputValue: string) => {
-    appContext.handleSubmitPress(textInputValue);
+    todoStore.handleSubmitPress(textInputValue);
     setTextInputValue('');
     setInputFocus();
   };
