@@ -1,8 +1,16 @@
 import React from 'react';
 import {StyleSheet, Text, View, Pressable} from 'react-native';
 import {Verify, Trash} from 'iconsax-react-native';
+import {TodoObject} from '../../types';
 
-const SingleTodoComponent = ({singleTodo, handleDeletePress}) => {
+interface Props {
+  singleTodo: TodoObject;
+  handleDeletePress: (id: number) => void;
+}
+const SingleTodoComponent: React.FC<Props> = ({
+  singleTodo,
+  handleDeletePress,
+}) => {
   return (
     <View style={[styles.singleTodoContainer, styles.shadowProp]}>
       <Text style={styles.todoText}>{singleTodo.text}</Text>

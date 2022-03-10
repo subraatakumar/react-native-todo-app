@@ -3,7 +3,7 @@ import {StyleSheet, View, Pressable, TextInput} from 'react-native';
 import {useContextProvider} from '../AppContextProvider';
 import {ArrowRight2} from 'iconsax-react-native';
 
-const TodoInput = () => {
+const TodoInput: React.FC = () => {
   const todoTextInput = React.useRef<TextInput>(null);
   const appContext = useContextProvider();
   const [textInputValue, setTextInputValue] = React.useState<string>('');
