@@ -36,6 +36,7 @@ const TodoInput: React.FC = () => {
       />
       <Pressable
         onPress={() => handleSubmitEditing(textInputValue)}
+        testID="addTodoBtn"
         style={styles.submitPressable}>
         <ArrowRight2 size={32} color="#000000" style={styles.submitArrow} />
       </Pressable>

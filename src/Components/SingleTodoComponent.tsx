@@ -15,7 +15,9 @@ const SingleTodoComponent: React.FC<Props> = ({
     <View style={[styles.singleTodoContainer, styles.shadowProp]}>
       <Text style={styles.todoText}>{singleTodo.text}</Text>
       <View style={styles.singleTodoIconsContainer}>
-        <Pressable onPress={() => handleDeletePress(singleTodo.id)}>
+        <Pressable
+          testID="delete-btn"
+          onPress={() => handleDeletePress(singleTodo.id)}>
           <Trash size="45" color="#FF0000" />
         </Pressable>
         <Pressable onPress={() => handleDeletePress(singleTodo.id)}>
