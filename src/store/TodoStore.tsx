@@ -71,7 +71,7 @@ class TodoStore {
       ...this.todos,
       {id: maxId + 1, date: this.navBarDate, text: textInputValue},
     ];
-    this.setAppData({todosData: this.todos});
+    //this.setAppData({todosData: this.todos});
     console.log('setTodos', this.todos);
   };
 

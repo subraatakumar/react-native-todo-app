@@ -9,7 +9,7 @@
  */
 
 import React, {useEffect} from 'react';
-import {SafeAreaView, StyleSheet} from 'react-native';
+import {AppState, SafeAreaView, StyleSheet} from 'react-native';
 import {NavBarComponent} from './Components/NavBarComponent';
 // import {AppContextProvider} from './AppContextProvider';
 import TodoList from './Components/TodoList';
@@ -22,6 +22,17 @@ export const todoStore = new TodoStore();
 
 const App: React.FC = () => {
   useEffect(() => {
+    AppState.addEventListener('change', state => {
+      if (state === 'background') {
+        // For Android
+        todoStore.setAppData({todosData: todoStore.todos});
+        console.log('App is background!');
+      } else if (state === 'inactive') {
+        // For IOS
+        todoStore.setAppData({todosData: todoStore.todos});
+        console.log('App is inactive!');
+      }
+    });
     const getAppData = async (): Promise<AppData | null> => {
       //console.log('App data getting started.');
       try {
@@ -37,6 +48,12 @@ const App: React.FC = () => {
       }
     };
     getAppData();
+
+    return () => {
+      // Back button pressed to close the app
+      // componentWillUnmount()
+      console.log(' App Closed!');
+    };
   }, []);
 
   return (
