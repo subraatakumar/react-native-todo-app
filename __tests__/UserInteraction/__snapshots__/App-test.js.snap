@@ -98,7 +98,7 @@ exports[`given empty todoList, user can add an item to it 1`] = `
         }
       }
     >
-      11/03/2022
+      12/03/2022
     </Text>
     <View
       accessible={true}
